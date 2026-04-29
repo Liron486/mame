@@ -86,6 +86,8 @@ protected:
 
 	uint8_t m_cannonb_bit_to_read = 0;
 	uint8_t m_counter = 0;
+	uint8_t m_mschamp_mux = 0xff;
+	uint8_t m_mschamp_mux_data = 0xff;
 	int m_bigbucks_bank = 0;
 	uint8_t m_rocktrv2_question_bank = 0;
 	tilemap_t *m_bg_tilemap = nullptr;
@@ -115,7 +117,8 @@ protected:
 	uint8_t mbrush_prot_r(offs_t offset);
 	uint8_t maketrax_special_port2_r(offs_t offset);
 	uint8_t maketrax_special_port3_r(offs_t offset);
-	uint8_t mschamp_kludge_r();
+	uint8_t mschamp_mux_r();
+	void mschamp_mux_w(offs_t offset, uint8_t data);
 	void bigbucks_bank_w(uint8_t data);
 	uint8_t bigbucks_question_r(offs_t offset);
 	void porky_banking_w(uint8_t data);

@@ -730,13 +730,29 @@ uint8_t pacman_state::mbrush_prot_r(offs_t offset)
 
 /*************************************
  *
- *  Zola kludge
+ *  Zola custom hardware
  *
  *************************************/
 
-uint8_t pacman_state::mschamp_kludge_r()
+uint8_t pacman_state::mschamp_mux_r()
 {
-	return m_counter++;
+	switch (m_mschamp_mux)
+	{
+	case 0x10:
+		return 0x40 | (ioport("TIMER")->read() & 0x03);
+
+	case 0x11:
+		return m_mschamp_mux_data;
+
+	default:
+		return 0xff;
+	}
+}
+
+void pacman_state::mschamp_mux_w(offs_t offset, uint8_t data)
+{
+	m_mschamp_mux = 0x10 + offset;
+	m_mschamp_mux_data = data;
 }
 
 
@@ -1525,7 +1541,8 @@ void pacman_state::mspacii_portmap(address_map &map)
 void pacman_state::mschamp_portmap(address_map &map)
 {
 	writeport(map);
-	map(0x00, 0x00).r(FUNC(pacman_state::mschamp_kludge_r));
+	map(0x00, 0x00).r(FUNC(pacman_state::mschamp_mux_r));
+	map(0x10, 0x11).w(FUNC(pacman_state::mschamp_mux_w));
 }
 
 void pacman_state::bigbucks_portmap(address_map &map)
@@ -1744,6 +1761,10 @@ INPUT_PORTS_END
 static INPUT_PORTS_START( mschamp )
 	PORT_INCLUDE( mspacman )
 
+	/* Super Zola Pac Gal uses the cocktail P2 Left line as Turbo. */
+	PORT_MODIFY("IN1")
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT ) PORT_4WAY PORT_COCKTAIL PORT_NAME("P2 Left / Turbo")
+
 	PORT_START("GAME")
 	PORT_DIPNAME( 0x01, 0x01, "Game" )
 	PORT_DIPSETTING(    0x01, "Champion Edition" )
@@ -1757,6 +1778,13 @@ static INPUT_PORTS_START( mschamp )
 	PORT_DIPNAME( 0x08, 0x00, DEF_STR( Unknown ) )
 	PORT_DIPSETTING(    0x00, DEF_STR( Off ) )
 	PORT_DIPSETTING(    0x08, DEF_STR( On ) )
+
+	PORT_START("TIMER")
+	PORT_DIPNAME( 0x03, 0x01, "Timer" )
+	PORT_DIPSETTING(    0x00, "1:30" )
+	PORT_DIPSETTING(    0x01, "1:00" )
+	PORT_DIPSETTING(    0x02, "0:45" )
+	PORT_DIPSETTING(    0x03, "0:30" )
 INPUT_PORTS_END
 
 /* Pacman Club inputs are similar to Ms. Pac-Man, except:
@@ -8687,8 +8715,11 @@ void pacman_state::init_mspacman()
 
 void pacman_state::init_mschamp()
 {
-	save_item(NAME(m_counter));
-	m_counter = 0;
+	save_item(NAME(m_mschamp_mux));
+	save_item(NAME(m_mschamp_mux_data));
+
+	m_mschamp_mux = 0xff;
+	m_mschamp_mux_data = 0xff;
 }
 
 void pacman_state::init_woodpek()
