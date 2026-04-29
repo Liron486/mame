@@ -52,8 +52,7 @@ protected:
 	void dremshpr_portmap(address_map &map) ATTR_COLD;
 	void drivfrcp_portmap(address_map &map) ATTR_COLD;
 	void mspacii_portmap(address_map &map) ATTR_COLD;
-	void mschamp_map(address_map &map) ATTR_COLD;
-	void mschamp_portmap(address_map &map) ATTR_COLD;
+	void crush4_map(address_map &map) ATTR_COLD;
 	void mspacman_map(address_map &map) ATTR_COLD;
 	void nmouse_portmap(address_map &map) ATTR_COLD;
 	void numcrash_map(address_map &map) ATTR_COLD;
@@ -86,8 +85,6 @@ protected:
 
 	uint8_t m_cannonb_bit_to_read = 0;
 	uint8_t m_counter = 0;
-	uint8_t m_mschamp_mux = 0xff;
-	uint8_t m_mschamp_mux_data = 0xff;
 	int m_bigbucks_bank = 0;
 	uint8_t m_rocktrv2_question_bank = 0;
 	tilemap_t *m_bg_tilemap = nullptr;
@@ -117,8 +114,6 @@ protected:
 	uint8_t mbrush_prot_r(offs_t offset);
 	uint8_t maketrax_special_port2_r(offs_t offset);
 	uint8_t maketrax_special_port3_r(offs_t offset);
-	uint8_t mschamp_mux_r();
-	void mschamp_mux_w(offs_t offset, uint8_t data);
 	void bigbucks_bank_w(uint8_t data);
 	uint8_t bigbucks_question_r(offs_t offset);
 	void porky_banking_w(uint8_t data);
@@ -174,7 +169,6 @@ public:
 	void init_8bpm();
 	void init_porky();
 	void init_mspacman();
-	void init_mschamp();
 	void init_mbrush();
 	void init_pengomc1();
 
@@ -189,7 +183,7 @@ protected:
 	void pacman_rbg_palette(palette_device &palette) const;
 	DECLARE_VIDEO_START(birdiy);
 	DECLARE_VIDEO_START(s2650games);
-	DECLARE_MACHINE_RESET(mschamp);
+	DECLARE_MACHINE_RESET(crush4);
 	DECLARE_MACHINE_RESET(superabc);
 	DECLARE_MACHINE_RESET(maketrax);
 	DECLARE_VIDEO_START(pengo);
@@ -215,7 +209,6 @@ public:
 	void mspacman(machine_config &config);
 	void dremshpr(machine_config &config);
 	void mspacii(machine_config &config);
-	void mschamp(machine_config &config);
 	void nmouse(machine_config &config);
 	void vanvan(machine_config &config);
 	void s2650games(machine_config &config);
@@ -350,5 +343,32 @@ protected:
 	required_shared_ptr<uint8_t> m_decrypted_opcodes_high;
 };
 
+class mschamp_state : public pacman_state
+{
+public:
+	mschamp_state(const machine_config &mconfig, device_type type, const char *tag)
+		: pacman_state(mconfig, type, tag)
+		, m_timer(*this, "TIMER")
+	{ }
+
+	void mschamp(machine_config &config);
+
+	void init_mschamp();
+
+protected:
+	DECLARE_MACHINE_RESET(mschamp);
+
+	void mschamp_map(address_map &map) ATTR_COLD;
+	void mschamp_portmap(address_map &map) ATTR_COLD;
+
+private:
+	uint8_t mux_r();
+	void mux_w(offs_t offset, uint8_t data);
+
+	required_ioport m_timer;
+
+	uint8_t m_mux = 0;
+	uint8_t m_mux_data = 0xff;
+};
 
 #endif // MAME_PACMAN_PACMAN_H
